@@ -109,14 +109,6 @@ export default {
                     axios
                         .post("/goods/BulkDelete", this.multipleSelection)
                         .then((m) => {
-                            // var idList = this.multipleSelection.map(
-                            //     (v) => v.goodsID
-                            // );
-
-                            // this.tableData = this.tableData.filter((o) => {
-                            //     return !idList.includes(o.goodsID);
-                            // });
-
                             this.fetch();
 
                             this.$message({
