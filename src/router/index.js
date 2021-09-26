@@ -4,6 +4,7 @@ import Login from '../page/Login'
 import home from '../page/home'
 import goodsCreate from '../page/Goods/create'
 import goodsList from '../page/Goods/list'
+import goodsEdit from '../page/Goods/Edit'
 
 Vue.use(Router)
 
@@ -28,6 +29,11 @@ export default new Router({
           path: '/goods/list',
           name: 'goodsList',
           component: goodsList
+        },
+        {
+          path: '/goods/edit',
+          name: 'goodsEdit',
+          component: goodsEdit
         }
       ]
     }

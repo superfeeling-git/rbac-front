@@ -14,6 +14,9 @@
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" @click="onSubmit">查询</el-button>
+                <el-button type="danger" @click="BulkDelete"
+                    >批量删除</el-button
+                >
             </el-form-item>
         </el-form>
         <el-table
@@ -80,6 +83,7 @@
 
 <script>
 import axios from "axios";
+import http from "../../util/httpreq";
 
 export default {
     data() {
@@ -95,23 +99,58 @@ export default {
         };
     },
     methods: {
+        BulkDelete() {
+            this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                type: "warning",
+            })
+                .then(() => {
+                    axios
+                        .post("/goods/BulkDelete", this.multipleSelection)
+                        .then((m) => {
+                            // var idList = this.multipleSelection.map(
+                            //     (v) => v.goodsID
+                            // );
+
+                            // this.tableData = this.tableData.filter((o) => {
+                            //     return !idList.includes(o.goodsID);
+                            // });
+
+                            this.fetch();
+
+                            this.$message({
+                                type: "success",
+                                message: "删除成功!",
+                            });
+                        });
+                })
+                .catch(() => {
+                    this.$message({
+                        type: "info",
+                        message: "已取消删除",
+                    });
+                });
+            console.log(this.multipleSelection);
+        },
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
         handleCurrentChange(val) {
-            axios
-                .get("/Goods/PageList", {
-                    params: {
-                        PageIndex: val,
-                    },
-                })
-                .then((res) => {
-                    this.total = res.data.item1;
-                    this.tableData = res.data.item2;
-                });
+            this.fetch({ PageIndex: val });
         },
         handleEdit(index, row) {
-            console.log(index, row);
+            //query传参方式,如果提供了 path，params 会被忽略
+            this.$router.push({
+                path: "/Goods/Edit",
+                query: { id: row.goodsID },
+            });
+
+            //也可以直接拼接
+            //this.$router.push(`/Goods/Edit?id=${row.goodsID}`)
+
+            //params传参方式
+            //this.$router.push({ name: 'goodsEdit', params: { id: row.goodsID }})
         },
         handleDelete(index, row) {
             console.log(index, row);
@@ -120,23 +159,19 @@ export default {
             this.formInline.CategoryId = value.slice(-1)[0];
         },
         onSubmit() {
-            axios
-                .get("/Goods/PageList", {
-                    params: this.formInline,
-                })
-                .then((res) => {
-                    this.total = res.data.item1;
-                    this.tableData = res.data.item2;
-                });
+            this.fetch(this.formInline);
+        },
+        fetch(params) {
+            http("/Goods/PageList", params).then((res) => {
+                this.total = res.data.item1;
+                this.tableData = res.data.item2;
+            });
         },
     },
     mounted() {
-        axios.get("/Goods/PageList").then((res) => {
-            this.total = res.data.item1;
-            this.tableData = res.data.item2;
-        });
+        this.fetch();
 
-        axios.get("/GoodsCategory/GetList").then((res) => {
+        http("/GoodsCategory/GetList").then((res) => {
             var reg = new RegExp('\\,"children":\\[]', "g");
             this.options = this.areaData = JSON.parse(
                 JSON.stringify(res.data).replace(reg, "")
